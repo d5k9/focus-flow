@@ -119,4 +119,50 @@ import Foundation
         #expect(vm.isRunning == false)
         #expect(vm.completedFocusCount == 0)
     }
+
+    @Test func startWhileAlreadyRunningIsNoOp() {
+        let ticker = FakeTicker()
+        let vm = makeVM(ticker: ticker)
+        vm.start()
+        vm.start()
+        #expect(ticker.startCount == 1)
+        #expect(vm.isRunning == true)
+    }
+
+    @Test func pauseWhenNotRunningIsNoOp() {
+        let ticker = FakeTicker()
+        let vm = makeVM(ticker: ticker)
+        vm.pause()
+        #expect(vm.isRunning == false)
+        #expect(ticker.stopCount == 0)
+        #expect(vm.remaining == 60)
+    }
+
+    @Test func fourthFocusRoutesToLongBreakThroughTheVM() {
+        let clock = FakeClock()
+        let notifications = NotificationSpy()
+        let vm = makeVM(clock: clock, notifications: notifications)
+
+        // Drive a phase to completion through the real VM path (start -> elapse -> tick).
+        func completeCurrentPhase() {
+            let duration = vm.remaining
+            vm.start()
+            clock.advance(by: duration)
+            vm.tick()
+        }
+
+        // Three full focus->short->focus cycles.
+        for _ in 0..<3 {
+            completeCurrentPhase()   // focus -> shortBreak
+            completeCurrentPhase()   // shortBreak -> focus
+        }
+        #expect(vm.completedFocusCount == 3)
+        #expect(vm.phase == .focus)
+
+        completeCurrentPhase()       // 4th focus -> longBreak
+        #expect(vm.phase == .longBreak)
+        #expect(vm.completedFocusCount == 4)
+        #expect(notifications.events.last?.finished == .focus)
+        #expect(notifications.events.last?.next == .longBreak)
+    }
 }

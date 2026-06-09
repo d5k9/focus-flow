@@ -6,7 +6,8 @@ public struct PomodoroSettings: Equatable, Sendable, Codable {
     public var shortBreakDuration: TimeInterval
     public var longBreakDuration: TimeInterval
     /// A long break replaces the short break after every `longBreakInterval`
-    /// completed focus sessions. Always >= 1.
+    /// completed focus sessions. The initializer clamps this to >= 1; values
+    /// below 1 set via direct mutation are unsupported (the UI uses a 1...N stepper).
     public var longBreakInterval: Int
 
     public init(

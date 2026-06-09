@@ -40,3 +40,70 @@ import Testing
         #expect(PomodoroSettings(longBreakInterval: -5).longBreakInterval == 1)
     }
 }
+
+@Suite struct PomodoroEngineTests {
+    @Test func startsInFocusWithZeroCount() {
+        let e = PomodoroEngine()
+        #expect(e.currentPhase == .focus)
+        #expect(e.completedFocusCount == 0)
+    }
+
+    @Test func completingFocusCreditsAndGoesToShortBreak() {
+        var e = PomodoroEngine()
+        e.complete()
+        #expect(e.completedFocusCount == 1)
+        #expect(e.currentPhase == .shortBreak)
+    }
+
+    @Test func completingABreakGoesBackToFocusWithoutCrediting() {
+        var e = PomodoroEngine()
+        e.complete()                 // focus #1 done -> shortBreak
+        e.complete()                 // shortBreak done -> focus
+        #expect(e.currentPhase == .focus)
+        #expect(e.completedFocusCount == 1)
+    }
+
+    @Test func everyFourthFocusLeadsToALongBreak() {
+        var e = PomodoroEngine(settings: PomodoroSettings(longBreakInterval: 4))
+        for _ in 0..<3 {
+            e.complete()             // focus -> shortBreak
+            e.complete()             // shortBreak -> focus
+        }
+        #expect(e.completedFocusCount == 3)
+        e.complete()                 // 4th focus completed
+        #expect(e.completedFocusCount == 4)
+        #expect(e.currentPhase == .longBreak)
+    }
+
+    @Test func skippingFocusDoesNotCreditAndGoesToShortBreak() {
+        var e = PomodoroEngine(settings: PomodoroSettings(longBreakInterval: 1))
+        e.skip()
+        #expect(e.completedFocusCount == 0)
+        #expect(e.currentPhase == .shortBreak)
+    }
+
+    @Test func skippingABreakGoesToFocus() {
+        var e = PomodoroEngine()
+        e.complete()                 // -> shortBreak
+        e.skip()                     // skip break -> focus
+        #expect(e.currentPhase == .focus)
+        #expect(e.completedFocusCount == 1)
+    }
+
+    @Test func resetReturnsToFreshFocus() {
+        var e = PomodoroEngine()
+        e.complete(); e.complete(); e.complete()
+        e.reset()
+        #expect(e.currentPhase == .focus)
+        #expect(e.completedFocusCount == 0)
+    }
+
+    @Test func currentPhaseDurationFollowsSettings() {
+        var e = PomodoroEngine(settings: PomodoroSettings(
+            focusDuration: 1500, shortBreakDuration: 300,
+            longBreakDuration: 900, longBreakInterval: 4))
+        #expect(e.currentPhaseDuration == 1500)
+        e.complete()
+        #expect(e.currentPhaseDuration == 300)
+    }
+}

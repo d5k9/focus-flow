@@ -106,4 +106,26 @@ import Testing
         e.complete()
         #expect(e.currentPhaseDuration == 300)
     }
+
+    @Test func completingALongBreakGoesBackToFocus() {
+        var e = PomodoroEngine(settings: PomodoroSettings(longBreakInterval: 1))
+        e.complete()                 // focus #1 -> longBreak (interval 1)
+        #expect(e.currentPhase == .longBreak)
+        e.complete()                 // longBreak -> focus
+        #expect(e.currentPhase == .focus)
+        #expect(e.completedFocusCount == 1)
+    }
+
+    @Test func countIsNotResetAfterALongBreakSoNextFocusIsShort() {
+        var e = PomodoroEngine(settings: PomodoroSettings(longBreakInterval: 4))
+        // Drive through three full cycles, then the 4th focus -> long break.
+        for _ in 0..<3 { e.complete(); e.complete() }
+        e.complete()                 // 4th focus -> longBreak, count 4
+        #expect(e.currentPhase == .longBreak)
+        e.complete()                 // longBreak -> focus, count stays 4
+        #expect(e.completedFocusCount == 4)
+        e.complete()                 // 5th focus completed, count 5, 5 % 4 != 0
+        #expect(e.completedFocusCount == 5)
+        #expect(e.currentPhase == .shortBreak)   // NOT another long break
+    }
 }

@@ -83,6 +83,16 @@ public final class TimerViewModel {
         remaining = engine.currentPhaseDuration
     }
 
+    /// Applies new cycle settings. If the timer is idle, the current phase's
+    /// remaining time reloads to the new duration; a running session is left
+    /// untouched until it next becomes idle.
+    public func applySettings(_ settings: PomodoroSettings) {
+        engine.settings = settings
+        if !isRunning {
+            remaining = engine.currentPhaseDuration
+        }
+    }
+
     /// Recomputes remaining from the clock. Internal so tests drive it
     /// directly and deterministically (no async hop needed).
     func tick() {

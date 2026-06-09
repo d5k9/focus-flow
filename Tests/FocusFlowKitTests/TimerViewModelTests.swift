@@ -165,4 +165,25 @@ import Foundation
         #expect(notifications.events.last?.finished == .focus)
         #expect(notifications.events.last?.next == .longBreak)
     }
+
+    @Test func applySettingsUpdatesIdleRemaining() {
+        let vm = makeVM()                       // focus = 60s
+        vm.applySettings(PomodoroSettings(
+            focusDuration: 120, shortBreakDuration: 30,
+            longBreakDuration: 45, longBreakInterval: 4))
+        #expect(vm.remaining == 120)            // idle focus reloads
+        #expect(vm.displayTime == "02:00")
+    }
+
+    @Test func applySettingsWhileRunningDoesNotJumpRemaining() {
+        let clock = FakeClock()
+        let vm = makeVM(clock: clock)
+        vm.start()
+        clock.advance(by: 10); vm.tick()        // remaining 50, running
+        vm.applySettings(PomodoroSettings(
+            focusDuration: 120, shortBreakDuration: 30,
+            longBreakDuration: 45, longBreakInterval: 4))
+        #expect(vm.isRunning == true)
+        #expect(vm.remaining == 50)             // running session is undisturbed
+    }
 }

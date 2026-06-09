@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import FocusFlowKit
+import Observation
 
 /// Owns the shared object graph and the auxiliary (non-popover) windows.
 /// Onboarding and Preferences use AppKit windows hosting SwiftUI — the same
@@ -35,6 +36,25 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         Task { _ = await notifications.requestAuthorization() }
         showOnboardingIfNeeded()
+        observeSettings()
+    }
+
+    /// Re-pushes pomodoro settings into the VM whenever a tracked settings
+    /// property changes. Observation fires the closure once per change; we
+    /// re-register each time to keep tracking.
+    private func observeSettings() {
+        withObservationTracking {
+            _ = settings.focusMinutes
+            _ = settings.shortBreakMinutes
+            _ = settings.longBreakMinutes
+            _ = settings.longBreakInterval
+        } onChange: { [weak self] in
+            Task { @MainActor in
+                guard let self else { return }
+                self.timerVM.applySettings(self.settings.pomodoroSettings)
+                self.observeSettings()   // re-arm
+            }
+        }
     }
 
     func showOnboardingIfNeeded() {

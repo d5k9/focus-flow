@@ -185,5 +185,6 @@ import Foundation
             longBreakDuration: 45, longBreakInterval: 4))
         #expect(vm.isRunning == true)
         #expect(vm.remaining == 50)             // running session is undisturbed
+        #expect(abs(vm.progress - (1 - 50.0 / 60.0)) < 0.0001)
     }
 }

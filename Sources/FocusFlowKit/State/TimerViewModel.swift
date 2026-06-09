@@ -10,6 +10,9 @@ public final class TimerViewModel {
     public private(set) var engine: PomodoroEngine
     public private(set) var isRunning = false
     public private(set) var remaining: TimeInterval
+    /// Progress denominator, frozen at phase start so mid-session settings
+    /// changes don't make the ring jump while a phase is running.
+    private var phaseDuration: TimeInterval
 
     @ObservationIgnored private let ticker: TimerTicker
     @ObservationIgnored private let clock: Clock
@@ -31,6 +34,7 @@ public final class TimerViewModel {
         self.notifications = notifications
         self.sound = sound
         self.remaining = engine.currentPhaseDuration
+        self.phaseDuration = engine.currentPhaseDuration
     }
 
     // MARK: Derived state for views
@@ -44,9 +48,8 @@ public final class TimerViewModel {
     }
 
     public var progress: Double {
-        let total = engine.currentPhaseDuration
-        guard total > 0 else { return 0 }
-        return min(1, max(0, 1 - remaining / total))
+        guard phaseDuration > 0 else { return 0 }
+        return min(1, max(0, 1 - remaining / phaseDuration))
     }
 
     // MARK: Intents
@@ -55,7 +58,7 @@ public final class TimerViewModel {
 
     public func start() {
         guard !isRunning else { return }
-        if remaining <= 0 { remaining = engine.currentPhaseDuration }
+        if remaining <= 0 { loadCurrentPhase() }
         endDate = clock.now.addingTimeInterval(remaining)
         isRunning = true
         ticker.start { [weak self] in
@@ -74,13 +77,13 @@ public final class TimerViewModel {
     public func reset() {
         stopTimer()
         engine.reset()
-        remaining = engine.currentPhaseDuration
+        loadCurrentPhase()
     }
 
     public func skip() {
         stopTimer()
         engine.skip()
-        remaining = engine.currentPhaseDuration
+        loadCurrentPhase()
     }
 
     /// Applies new cycle settings. If the timer is idle, the current phase's
@@ -89,7 +92,7 @@ public final class TimerViewModel {
     public func applySettings(_ settings: PomodoroSettings) {
         engine.settings = settings
         if !isRunning {
-            remaining = engine.currentPhaseDuration
+            loadCurrentPhase()
         }
     }
 
@@ -109,12 +112,19 @@ public final class TimerViewModel {
         isRunning = false
     }
 
+    /// Loads the current engine phase into the timer: resets remaining to the
+    /// full phase duration and freezes that as the progress denominator.
+    private func loadCurrentPhase() {
+        phaseDuration = engine.currentPhaseDuration
+        remaining = phaseDuration
+    }
+
     private func completePhase() {
         stopTimer()
         let finished = engine.currentPhase
         sound.playCompletionChime()
         engine.complete()
         notifications.notifyPhaseComplete(finished: finished, next: engine.currentPhase)
-        remaining = engine.currentPhaseDuration
+        loadCurrentPhase()
     }
 }

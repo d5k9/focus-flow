@@ -29,6 +29,8 @@ targets:
         LSUIElement: true
         CFBundleDisplayName: FocusFlow
         CFBundleName: FocusFlow
+        CFBundleShortVersionString: "$(MARKETING_VERSION)"
+        CFBundleVersion: "$(CURRENT_PROJECT_VERSION)"
         LSMinimumSystemVersion: "26.0"
         NSHumanReadableCopyright: "© 2026"
     entitlements:
@@ -43,6 +45,6 @@ targets:
         SWIFT_VERSION: "5.0"
         ENABLE_HARDENED_RUNTIME: YES
         CODE_SIGN_STYLE: Automatic
-        DEVELOPMENT_TEAM: ""
+        DEVELOPMENT_TEAM: "" # set before archiving/notarization
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_USER_SCRIPT_SANDBOXING: YES

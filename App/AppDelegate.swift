@@ -57,7 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func showPreferences() {
         if let w = preferencesWindow { w.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); return }
         let view = PreferencesView(settings: settings)
-        let window = makeAuxWindow(title: "FocusFlow Preferences", content: view, size: NSSize(width: 320, height: 360))
+        let window = makeAuxWindow(title: "FocusFlow Preferences", content: view, size: NSSize(width: 320, height: 460))
         preferencesWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

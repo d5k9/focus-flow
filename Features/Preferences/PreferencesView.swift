@@ -57,10 +57,8 @@ struct PreferencesView: View {
         HStack {
             Text(label)
             Spacer()
-            Stepper(value: value, in: range) {
-                Text("\(value.wrappedValue)").monospacedDigit()
-            }
-            .labelsHidden()
+            Stepper(value: value, in: range, label: { Text(label) })
+                .labelsHidden()
             Text("\(value.wrappedValue)").monospacedDigit().frame(minWidth: 28, alignment: .trailing)
             Text("MIN").font(DesignTokens.monoLabel).foregroundStyle(DesignTokens.secondaryText)
         }

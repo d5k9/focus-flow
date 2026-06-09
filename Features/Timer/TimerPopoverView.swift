@@ -2,7 +2,7 @@ import SwiftUI
 import FocusFlowKit
 
 struct TimerPopoverView: View {
-    @Bindable var vm: TimerViewModel
+    let vm: TimerViewModel
     var onOpenPreferences: () -> Void = {}
 
     private var accent: Color { DesignTokens.accent(for: vm.phase) }
@@ -29,6 +29,7 @@ struct TimerPopoverView: View {
                     .foregroundStyle(DesignTokens.secondaryText)
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Preferences")
         }
     }
 
@@ -49,7 +50,7 @@ struct TimerPopoverView: View {
 
     private var controls: some View {
         HStack(spacing: DesignTokens.elementGap) {
-            iconButton("arrow.counterclockwise", action: vm.reset)
+            iconButton("arrow.counterclockwise", label: "Reset timer", action: vm.reset)
             Button(action: vm.toggle) {
                 Image(systemName: vm.isRunning ? "pause.fill" : "play.fill")
                     .font(.title2)
@@ -58,11 +59,12 @@ struct TimerPopoverView: View {
                     .background(Circle().fill(accent))
             }
             .buttonStyle(.plain)
-            iconButton("forward.fill", action: vm.skip)
+            .accessibilityLabel(vm.isRunning ? "Pause" : "Start")
+            iconButton("forward.fill", label: "Skip", action: vm.skip)
         }
     }
 
-    private func iconButton(_ symbol: String, action: @escaping () -> Void) -> some View {
+    private func iconButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .foregroundStyle(DesignTokens.onSurface)
@@ -70,5 +72,6 @@ struct TimerPopoverView: View {
                 .background(Circle().fill(DesignTokens.surfaceContainerHigh))
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 }

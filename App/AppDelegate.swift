@@ -18,9 +18,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     override init() {
         let settings = SettingsStore()
-        // Task 15 swaps these no-ops for the real macOS services.
-        let notifications: NotificationScheduling = NoopNotificationService()
-        let sound: SoundPlaying = NoopSoundService()
+        let notifications: NotificationScheduling =
+            UserNotificationService(isEnabled: { settings.desktopAlertsEnabled })
+        let sound: SoundPlaying =
+            SystemSoundService(isEnabled: { settings.soundEffectsEnabled })
         self.settings = settings
         self.notifications = notifications
         self.sound = sound
@@ -68,7 +69,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.settings.hasCompletedOnboarding = true
             self?.onboardingWindow?.close()
         }
-        let window = makeAuxWindow(title: "Welcome to FocusFlow", content: view, size: NSSize(width: 360, height: 320))
+        let window = makeAuxWindow(title: "Welcome to FocusFlow", content: view, size: NSSize(width: 360, height: 360))
         onboardingWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)

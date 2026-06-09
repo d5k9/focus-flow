@@ -29,3 +29,19 @@ final class FakeTicker: TimerTicker {
     /// Simulate one ticker fire.
     func fire() { onTick?() }
 }
+
+/// Records whether a completion chime was requested.
+final class SoundSpy: SoundPlaying {
+    private(set) var playCount = 0
+    func playCompletionChime() { playCount += 1 }
+}
+
+/// Records phase-completion notifications.
+final class NotificationSpy: NotificationScheduling {
+    private(set) var authorizationRequested = false
+    private(set) var events: [(finished: PomodoroPhase, next: PomodoroPhase)] = []
+    func requestAuthorization() async -> Bool { authorizationRequested = true; return true }
+    func notifyPhaseComplete(finished: PomodoroPhase, next: PomodoroPhase) {
+        events.append((finished, next))
+    }
+}

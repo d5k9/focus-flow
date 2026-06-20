@@ -12,7 +12,10 @@ public struct BreathingSession: Equatable, Sendable {
         self.pattern = pattern; self.targetCycles = targetCycles
     }
 
-    public var currentKind: BreathPhaseKind { pattern.steps[stepIndex].kind }
+    public var currentKind: BreathPhaseKind {
+        guard pattern.steps.indices.contains(stepIndex) else { return .inhale }
+        return pattern.steps[stepIndex].kind
+    }
     public var isFinished: Bool { completedCycles >= targetCycles }
 
     /// Seconds left in the current step, given total elapsed seconds.

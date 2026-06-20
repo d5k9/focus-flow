@@ -11,6 +11,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings: SettingsStore
     let timerVM: TimerViewModel
     let statsVM: StatsViewModel
+    let soundMixerVM: SoundMixerViewModel
     private let sessionStore: SwiftDataSessionStore?
     private let notifications: NotificationScheduling
     private let sound: SoundPlaying
@@ -36,6 +37,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             notifications: notifications,
             sound: sound,
             sessionRecorder: store
+        )
+        self.soundMixerVM = SoundMixerViewModel(
+            engine: AVAmbientAudioEngine(),
+            ticker: DispatchSourceTimerTicker()
         )
         super.init()
     }

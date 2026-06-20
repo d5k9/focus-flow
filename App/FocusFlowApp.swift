@@ -9,6 +9,7 @@ struct FocusFlowApp: App {
             RootPopoverView(
                 timerVM: appDelegate.timerVM,
                 statsVM: appDelegate.statsVM,
+                soundMixerVM: appDelegate.soundMixerVM,
                 onOpenPreferences: { appDelegate.showPreferences() })
         } label: {
             MenuBarLabel(vm: appDelegate.timerVM)

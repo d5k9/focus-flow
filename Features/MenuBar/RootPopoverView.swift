@@ -4,6 +4,7 @@ import FocusFlowKit
 struct RootPopoverView: View {
     let timerVM: TimerViewModel
     let statsVM: StatsViewModel
+    let soundMixerVM: SoundMixerViewModel
     var onOpenPreferences: () -> Void = {}
     @State private var tab: PopoverTab = .timer
 
@@ -12,6 +13,7 @@ struct RootPopoverView: View {
             switch tab {
             case .timer: TimerPopoverView(vm: timerVM, onOpenPreferences: onOpenPreferences)
             case .stats: StatsView(vm: statsVM)
+            case .sounds: SoundMixerView(vm: soundMixerVM)
             case .settings: TimerPopoverView(vm: timerVM, onOpenPreferences: onOpenPreferences)
             }
             PopoverTabBar(selection: $tab, onSettings: onOpenPreferences)

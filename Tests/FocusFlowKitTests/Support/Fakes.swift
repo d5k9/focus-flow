@@ -42,6 +42,17 @@ final class SoundSpy: SoundPlaying {
     func record(_ session: FocusSessionRecord) { recorded.append(session) }
 }
 
+/// Records calls made to the ambient audio engine.
+final class AudioEngineSpy: AmbientAudioEngine {
+    private(set) var playing: Set<String> = []
+    private(set) var volumes: [String: Double] = [:]
+    private(set) var stopAllCount = 0
+    func play(_ id: String) { playing.insert(id) }
+    func stop(_ id: String) { playing.remove(id) }
+    func setVolume(_ volume: Double, for id: String) { volumes[id] = volume }
+    func stopAll() { stopAllCount += 1; playing.removeAll() }
+}
+
 /// Records phase-completion notifications.
 final class NotificationSpy: NotificationScheduling {
     private(set) var authorizationRequested = false

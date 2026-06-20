@@ -20,6 +20,7 @@ targets:
       - Services
       - DesignSystem
       - path: Resources/Assets.xcassets
+      - path: Resources/Sounds
     dependencies:
       - package: FocusFlowKit
         product: FocusFlowKit

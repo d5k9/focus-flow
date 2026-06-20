@@ -36,7 +36,7 @@ final class BreakFlowCoordinator {
     }
 
     private func presentBreathing() {
-        let pattern = BreathingPattern.all.first { $0.id == "box" }!
+        guard let pattern = BreathingPattern.all.first(where: { $0.id == "box" }) else { dismiss(); return }
         let vm = BreathingViewModel(pattern: pattern, targetCycles: 6, ticker: DispatchSourceTimerTicker())
         present(AnyView(BreathingSessionView(vm: vm, onEnd: { [weak self] in self?.dismiss() })))
     }

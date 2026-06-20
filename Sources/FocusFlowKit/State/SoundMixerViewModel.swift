@@ -35,12 +35,10 @@ public final class SoundMixerViewModel {
     }
 
     public func startSleepTimer(minutes: Int) {
+        cancelSleepTimer()
         sleepEnd = clock.now.addingTimeInterval(TimeInterval(minutes) * 60)
         sleepRemaining = TimeInterval(minutes) * 60
-        ticker.start { [weak self] in
-            guard let self else { return }
-            MainActor.assumeIsolated { self.tickSleep() }
-        }
+        ticker.start { [weak self] in Task { @MainActor in self?.tickSleep() } }
     }
 
     public func cancelSleepTimer() {
@@ -54,7 +52,8 @@ public final class SoundMixerViewModel {
 
     func tickSleep() {
         guard let end = sleepEnd else { return }
-        sleepRemaining = max(0, end.timeIntervalSince(clock.now))
-        if sleepRemaining! <= 0 { engine.stopAll(); cancelSleepTimer() }
+        let remaining = max(0, end.timeIntervalSince(clock.now))
+        sleepRemaining = remaining
+        if remaining <= 0 { engine.stopAll(); cancelSleepTimer() }
     }
 }

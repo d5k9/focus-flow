@@ -29,7 +29,8 @@ import Testing
         vm.toggle("rain")
         vm.startSleepTimer(minutes: 1)
         #expect(vm.sleepRemainingText == "01:00")
-        clock.advance(by: 60); ticker.fire()
+        clock.advance(by: 60)
+        vm.tickSleep()
         #expect(engine.stopAllCount == 1)
         #expect(vm.sleepRemainingText == nil)
     }

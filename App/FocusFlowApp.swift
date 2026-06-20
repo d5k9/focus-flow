@@ -6,10 +6,10 @@ struct FocusFlowApp: App {
 
     var body: some Scene {
         MenuBarExtra {
-            TimerPopoverView(
-                vm: appDelegate.timerVM,
-                onOpenPreferences: { appDelegate.showPreferences() }
-            )
+            RootPopoverView(
+                timerVM: appDelegate.timerVM,
+                statsVM: appDelegate.statsVM,
+                onOpenPreferences: { appDelegate.showPreferences() })
         } label: {
             MenuBarLabel(vm: appDelegate.timerVM)
         }

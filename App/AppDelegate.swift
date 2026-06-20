@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private var onboardingWindow: NSWindow?
     private var preferencesWindow: NSWindow?
+    private var breakFlow: BreakFlowCoordinator?
 
     override init() {
         let settings = SettingsStore()
@@ -49,6 +50,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task { _ = await notifications.requestAuthorization() }
         showOnboardingIfNeeded()
         observeSettings()
+        breakFlow = BreakFlowCoordinator(timerVM: timerVM)
     }
 
     /// Re-pushes pomodoro settings into the VM whenever a tracked settings

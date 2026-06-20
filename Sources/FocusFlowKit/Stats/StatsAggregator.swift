@@ -64,13 +64,12 @@ public enum StatsAggregator {
 
         // Best streak: longest run of consecutive days anywhere.
         var best = 1, run = 1
-        for i in 1..<max(sorted.count, 1) where sorted.count > 1 {
+        for i in 1..<sorted.count where sorted.count > 1 {
             let prev = sorted[i - 1], cur = sorted[i]
             if calendar.date(byAdding: .day, value: 1, to: prev).map({ calendar.isDate($0, inSameDayAs: cur) }) == true {
                 run += 1; best = max(best, run)
             } else { run = 1 }
         }
-        if sorted.count == 1 { best = 1 }
 
         // Current streak: consecutive days counting back from today.
         var current = 0

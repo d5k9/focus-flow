@@ -34,5 +34,8 @@ struct BreathingSessionView: View {
         .frame(minWidth: 640, minHeight: 480)
         .onAppear { vm.start() }
         .onDisappear { vm.stop() }
+        .onChange(of: vm.isFinished) { _, finished in
+            if finished { onEnd() }
+        }
     }
 }

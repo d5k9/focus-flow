@@ -59,7 +59,7 @@ final class BreakFlowCoordinator {
             backing: .buffered,
             defer: false
         )
-        window.level = .normal
+        window.level = .floating
         window.isReleasedWhenClosed = false
         window.isOpaque = false
         window.collectionBehavior = [.fullScreenAuxiliary, .canJoinAllSpaces]

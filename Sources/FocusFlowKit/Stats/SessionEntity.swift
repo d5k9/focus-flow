@@ -33,6 +33,7 @@ public final class SwiftDataSessionStore: SessionRecording, SessionReading {
         try? context.save()   // best-effort; never crash on persistence failure
     }
 
+    /// Returns all sessions newest-first (by `startedAt`).
     public func allSessions() -> [FocusSessionRecord] {
         let descriptor = FetchDescriptor<SessionEntity>(
             sortBy: [SortDescriptor(\.startedAt, order: .reverse)])

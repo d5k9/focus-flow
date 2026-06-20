@@ -36,6 +36,12 @@ final class SoundSpy: SoundPlaying {
     func playCompletionChime() { playCount += 1 }
 }
 
+/// Records sessions handed to it by the view model.
+@MainActor final class SessionRecorderSpy: SessionRecording {
+    private(set) var recorded: [FocusSessionRecord] = []
+    func record(_ session: FocusSessionRecord) { recorded.append(session) }
+}
+
 /// Records phase-completion notifications.
 final class NotificationSpy: NotificationScheduling {
     private(set) var authorizationRequested = false

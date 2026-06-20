@@ -18,6 +18,7 @@ public final class TimerViewModel {
     @ObservationIgnored private let clock: Clock
     @ObservationIgnored private let notifications: NotificationScheduling
     @ObservationIgnored private let sound: SoundPlaying
+    @ObservationIgnored private let sessionRecorder: SessionRecording?
     @ObservationIgnored private var endDate: Date?
 
     public init(
@@ -25,7 +26,8 @@ public final class TimerViewModel {
         ticker: TimerTicker,
         clock: Clock = SystemClock(),
         notifications: NotificationScheduling,
-        sound: SoundPlaying
+        sound: SoundPlaying,
+        sessionRecorder: SessionRecording? = nil
     ) {
         let engine = PomodoroEngine(settings: settings)
         self.engine = engine
@@ -33,6 +35,7 @@ public final class TimerViewModel {
         self.clock = clock
         self.notifications = notifications
         self.sound = sound
+        self.sessionRecorder = sessionRecorder
         self.remaining = engine.currentPhaseDuration
         self.phaseDuration = engine.currentPhaseDuration
     }
@@ -122,7 +125,14 @@ public final class TimerViewModel {
     private func completePhase() {
         stopTimer()
         let finished = engine.currentPhase
+        let finishedDuration = phaseDuration
         sound.playCompletionChime()
+        if finished == .focus {
+            sessionRecorder?.record(
+                FocusSessionRecord(
+                    startedAt: clock.now.addingTimeInterval(-finishedDuration),
+                    duration: finishedDuration))
+        }
         engine.complete()
         notifications.notifyPhaseComplete(finished: finished, next: engine.currentPhase)
         loadCurrentPhase()

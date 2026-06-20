@@ -14,6 +14,10 @@ public final class TimerViewModel {
     /// changes don't make the ring jump while a phase is running.
     private var phaseDuration: TimeInterval
 
+    /// Fired after a phase completes and the engine advances. The app uses
+    /// this to drive the full-screen break flow.
+    @ObservationIgnored public var onPhaseTransition: ((PomodoroPhase, PomodoroPhase) -> Void)?
+
     @ObservationIgnored private let ticker: TimerTicker
     @ObservationIgnored private let clock: Clock
     @ObservationIgnored private let notifications: NotificationScheduling
@@ -136,5 +140,6 @@ public final class TimerViewModel {
         engine.complete()
         notifications.notifyPhaseComplete(finished: finished, next: engine.currentPhase)
         loadCurrentPhase()
+        onPhaseTransition?(finished, engine.currentPhase)
     }
 }

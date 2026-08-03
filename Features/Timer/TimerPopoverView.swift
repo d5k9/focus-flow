@@ -10,7 +10,7 @@ struct TimerPopoverView: View {
     var body: some View {
         VStack(spacing: DesignTokens.elementGap) {
             header
-            ringSection
+            TimerReadout(vm: vm)
             controls
             SessionList(currentPhase: vm.phase)
         }
@@ -31,21 +31,6 @@ struct TimerPopoverView: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Preferences")
         }
-    }
-
-    private var ringSection: some View {
-        ZStack {
-            ProgressRing(progress: vm.progress, tint: accent)
-            VStack(spacing: 2) {
-                Text(vm.displayTime).font(DesignTokens.timerDisplay)
-                Text(vm.phase.title.uppercased())
-                    .font(DesignTokens.labelCaps)
-                    .tracking(0.5)
-                    .foregroundStyle(DesignTokens.secondaryText)
-            }
-        }
-        .frame(width: 160, height: 160)
-        .padding(.vertical, DesignTokens.stackTight)
     }
 
     private var controls: some View {

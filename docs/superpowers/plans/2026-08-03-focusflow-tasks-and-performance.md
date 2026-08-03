@@ -31,7 +31,7 @@
 **Interfaces:**
 - Produces: `struct TimerReadout: View { init(vm: TimerViewModel) }`
 
-- [ ] **Step 1: Create `TimerReadout`** — it takes the view model, not pre-read values:
+- [x] **Step 1: Create `TimerReadout`** — it takes the view model, not pre-read values:
 
 ```swift
 import SwiftUI
@@ -61,9 +61,9 @@ struct TimerReadout: View {
 }
 ```
 
-- [ ] **Step 2: Delete `ringSection` from `TimerPopoverView` and call `TimerReadout(vm: vm)` in its place.** Confirm no remaining reference to `vm.displayTime` or `vm.progress` in `TimerPopoverView.swift` (`grep -n 'displayTime\|progress' Features/Timer/TimerPopoverView.swift` must return nothing).
-- [ ] **Step 3: Build** — `xcodegen generate && xcodebuild ... build`. Expected: BUILD SUCCEEDED.
-- [ ] **Step 4: Commit** — `perf(timer): scope per-tick invalidation to the readout view`
+- [x] **Step 2: Delete `ringSection` from `TimerPopoverView` and call `TimerReadout(vm: vm)` in its place.** Confirm no remaining reference to `vm.displayTime` or `vm.progress` in `TimerPopoverView.swift` (`grep -n 'displayTime\|progress' Features/Timer/TimerPopoverView.swift` must return nothing).
+- [x] **Step 3: Build** — `xcodegen generate && xcodebuild ... build`. Expected: BUILD SUCCEEDED.
+- [x] **Step 4: Commit** — `perf(timer): scope per-tick invalidation to the readout view`
 
 ---
 
@@ -78,7 +78,7 @@ struct TimerReadout: View {
 **Interfaces:**
 - Produces: `SessionReading.revision: Int`; `StatsViewModel.refresh()` no-ops unless `(revision, startOfDay(now))` changed.
 
-- [ ] **Step 1: Write the failing tests.** Extend `StubReader` with `revision` and a fetch counter:
+- [x] **Step 1: Write the failing tests.** Extend `StubReader` with `revision` and a fetch counter:
 
 ```swift
 @MainActor final class StubReader: SessionReading {
@@ -115,8 +115,8 @@ struct TimerReadout: View {
 }
 ```
 
-- [ ] **Step 2: Run and watch them fail** — `swift test --filter StatsViewModelTests`. Expected: compile failure (`revision` not in protocol), then assertion failures.
-- [ ] **Step 3: Implement.** Add `var revision: Int { get }` to `SessionReading`; `SwiftDataSessionStore` gets `public private(set) var revision = 0` incremented at the end of `record`. In `StatsViewModel`:
+- [x] **Step 2: Run and watch them fail** — `swift test --filter StatsViewModelTests`. Expected: compile failure (`revision` not in protocol), then assertion failures.
+- [x] **Step 3: Implement.** Add `var revision: Int { get }` to `SessionReading`; `SwiftDataSessionStore` gets `public private(set) var revision = 0` incremented at the end of `record`. In `StatsViewModel`:
 
 ```swift
 @ObservationIgnored private var cacheKey: (revision: Int, day: Date)?
@@ -131,8 +131,8 @@ public func refresh() {
 }
 ```
 
-- [ ] **Step 4: Run tests** — `swift test`. Expected: all pass (existing `EmptySessionReader` in `App/AppDelegate.swift` also needs `revision`; it is removed in Task 4, so add `var revision: Int { 0 }` to it now to keep the app compiling).
-- [ ] **Step 5: Commit** — `perf(stats): cache aggregation on (revision, day) instead of refetching per visit`
+- [x] **Step 4: Run tests** — `swift test`. Expected: all pass (existing `EmptySessionReader` in `App/AppDelegate.swift` also needs `revision`; it is removed in Task 4, so add `var revision: Int { 0 }` to it now to keep the app compiling).
+- [x] **Step 5: Commit** — `perf(stats): cache aggregation on (revision, day) instead of refetching per visit`
 
 ---
 
@@ -142,7 +142,7 @@ public func refresh() {
 - Modify: `Sources/FocusFlowKit/Stats/SessionEntity.swift:allSessions`
 - Test: `Tests/FocusFlowKitTests/SwiftDataSessionStoreTests.swift`
 
-- [ ] **Step 1: Write the failing test** — proves the partial fetch still yields whole records:
+- [x] **Step 1: Write the failing test** — proves the partial fetch still yields whole records:
 
 ```swift
 @Test func partialFetchStillCarriesIdStartAndDuration() throws {
@@ -156,8 +156,8 @@ public func refresh() {
 }
 ```
 
-- [ ] **Step 2: Run it** — `swift test --filter SwiftDataSessionStoreTests`. Expected: PASS already (this test guards the next step from regressing).
-- [ ] **Step 3: Add the narrowing.** `id` is included deliberately — `asRecord` reads it, and omitting it faults every row back to the store:
+- [x] **Step 2: Run it** — `swift test --filter SwiftDataSessionStoreTests`. Expected: PASS already (this test guards the next step from regressing).
+- [x] **Step 3: Add the narrowing.** `id` is included deliberately — `asRecord` reads it, and omitting it faults every row back to the store:
 
 ```swift
 var descriptor = FetchDescriptor<SessionEntity>(
@@ -166,8 +166,8 @@ descriptor.propertiesToFetch = [\.id, \.startedAt, \.duration]
 return ((try? context.fetch(descriptor)) ?? []).map(\.asRecord)
 ```
 
-- [ ] **Step 4: Run tests** — `swift test --filter SwiftDataSessionStoreTests`. Expected: PASS. If `propertiesToFetch` misbehaves on this SDK, revert this step alone and note it — Task 2 is the load-bearing fix.
-- [ ] **Step 5: Commit** — `perf(stats): fetch only the properties the aggregator reads`
+- [x] **Step 4: Run tests** — `swift test --filter SwiftDataSessionStoreTests`. Expected: PASS. If `propertiesToFetch` misbehaves on this SDK, revert this step alone and note it — Task 2 is the load-bearing fix.
+- [x] **Step 5: Commit** — `perf(stats): fetch only the properties the aggregator reads`
 
 ---
 
@@ -180,7 +180,7 @@ return ((try? context.fetch(descriptor)) ?? []).map(\.asRecord)
 **Interfaces:**
 - Produces: `LazySessionStore(make: @escaping () throws -> (SessionRecording & SessionReading))`, conforming to `SessionRecording, SessionReading`.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
 
 ```swift
 @MainActor
@@ -220,8 +220,8 @@ Add to `Support/Fakes.swift`:
 }
 ```
 
-- [ ] **Step 2: Run and watch fail** — `swift test --filter LazySessionStoreTests`. Expected: compile failure, type not found.
-- [ ] **Step 3: Implement:**
+- [x] **Step 2: Run and watch fail** — `swift test --filter LazySessionStoreTests`. Expected: compile failure, type not found.
+- [x] **Step 3: Implement:**
 
 ```swift
 import Foundation
@@ -253,8 +253,8 @@ public final class LazySessionStore: SessionRecording, SessionReading {
 }
 ```
 
-- [ ] **Step 4: Run tests** — `swift test`. Expected: all pass.
-- [ ] **Step 5: Commit** — `perf(launch): add LazySessionStore to defer container creation`
+- [x] **Step 4: Run tests** — `swift test`. Expected: all pass.
+- [x] **Step 5: Commit** — `perf(launch): add LazySessionStore to defer container creation`
 
 ---
 
@@ -269,7 +269,7 @@ public final class LazySessionStore: SessionRecording, SessionReading {
 - Consumes: `LazySessionStore` (Task 4).
 - Produces: `RootPopoverView(delegate: AppDelegate, onOpenPreferences: () -> Void)`.
 
-- [ ] **Step 1: Make the view models lazy.** In `AppDelegate`, replace the stored `statsVM`/`soundMixerVM`/`sessionStore` with:
+- [x] **Step 1: Make the view models lazy.** In `AppDelegate`, replace the stored `statsVM`/`soundMixerVM`/`sessionStore` with:
 
 ```swift
 private lazy var sessionStore = LazySessionStore { try SwiftDataSessionStore() }
@@ -281,7 +281,7 @@ lazy var soundMixerVM = SoundMixerViewModel(
 
 `timerVM` stays eager but takes `sessionRecorder: sessionStore`. Because `sessionStore` is itself lazy and `LazySessionStore.init` touches nothing, no container is built at launch. Delete `EmptySessionReader` — `LazySessionStore` subsumes it. Note: `lazy var` referencing another `lazy var` requires them to be instance-level, so move construction of `timerVM` out of `init` into a `lazy var` too, or keep `timerVM` in `init` and pass a `LazySessionStore` created there.
 
-- [ ] **Step 2: Resolve per tab in `RootPopoverView`** so building the popover doesn't force every model:
+- [x] **Step 2: Resolve per tab in `RootPopoverView`** so building the popover doesn't force every model:
 
 ```swift
 struct RootPopoverView: View {
@@ -307,8 +307,8 @@ struct RootPopoverView: View {
 
 Update `FocusFlowApp` to `RootPopoverView(delegate: appDelegate, onOpenPreferences: { appDelegate.showPreferences() })`.
 
-- [ ] **Step 3: Build and launch** — `xcodegen generate && xcodebuild ... build`, then open the app, switch to Stats and Sounds. Expected: BUILD SUCCEEDED, tabs work.
-- [ ] **Step 4: Commit** — `perf(launch): construct stats and sound view models on first use`
+- [x] **Step 3: Build and launch** — `xcodegen generate && xcodebuild ... build`, then open the app, switch to Stats and Sounds. Expected: BUILD SUCCEEDED, tabs work.
+- [x] **Step 4: Commit** — `perf(launch): construct stats and sound view models on first use`
 
 ---
 
@@ -321,7 +321,7 @@ Update `FocusFlowApp` to `RootPopoverView(delegate: appDelegate, onOpenPreferenc
 **Interfaces:**
 - Produces: `TaskItem(id:title:isDone:completedPomodoros:createdAt:)`; `TaskList(items:activeID:)` with `add(title:createdAt:) -> UUID?`, `rename(_:to:)`, `toggleDone(_:)`, `delete(_:)`, `setActive(_:)`, `move(fromOffsets:toOffset:)`, `creditPomodoro(to:)`, `openItems`, `doneItems`, `activeItem`.
 
-- [ ] **Step 1: Write the failing tests** covering every rule in the spec:
+- [x] **Step 1: Write the failing tests** covering every rule in the spec:
 
 ```swift
 import Foundation
@@ -421,8 +421,8 @@ import Testing
 }
 ```
 
-- [ ] **Step 2: Run and watch fail** — `swift test --filter TaskListTests`. Expected: compile failure, `TaskList` not found.
-- [ ] **Step 3: Implement `TaskList.swift`.** Keep `items` normalized (open first, done last, stable within group) by re-sorting after each mutation with a stable partition:
+- [x] **Step 2: Run and watch fail** — `swift test --filter TaskListTests`. Expected: compile failure, `TaskList` not found.
+- [x] **Step 3: Implement `TaskList.swift`.** Keep `items` normalized (open first, done last, stable within group) by re-sorting after each mutation with a stable partition:
 
 ```swift
 import Foundation
@@ -513,8 +513,8 @@ public struct TaskList: Equatable, Sendable {
 }
 ```
 
-- [ ] **Step 4: Run tests** — `swift test --filter TaskListTests`. Expected: all pass.
-- [ ] **Step 5: Commit** — `feat(tasks): add TaskList domain type`
+- [x] **Step 4: Run tests** — `swift test --filter TaskListTests`. Expected: all pass.
+- [x] **Step 5: Commit** — `feat(tasks): add TaskList domain type`
 
 ---
 
@@ -529,7 +529,7 @@ public struct TaskList: Equatable, Sendable {
 - Consumes: `TaskList`, `TaskItem` (Task 6).
 - Produces: `protocol TaskStoring { func load() -> TaskList; func save(_ list: TaskList) }`; `SwiftDataTaskStore(container:)` and `SwiftDataTaskStore(inMemory:) throws`; `AppModelContainer.make(inMemory: Bool) throws -> ModelContainer` plus `AppModelContainer.shared() throws -> ModelContainer`, which memoizes one on-disk container so both stores share it (`make` stays available for tests, which want a fresh in-memory one each time).
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
 
 ```swift
 import Foundation
@@ -580,11 +580,11 @@ import Testing
 }
 ```
 
-- [ ] **Step 2: Run and watch fail** — `swift test --filter SwiftDataTaskStoreTests`. Expected: compile failure.
-- [ ] **Step 3: Implement.** `AppModelContainer.make` builds one `ModelContainer(for: SessionEntity.self, TaskEntity.self, configurations:)`. Both stores gain a `init(container:)` alongside the existing convenience `init(inMemory:) throws`. `TaskEntity` carries `id, title, isDone, completedPomodoros, createdAt, sortIndex, isActive`. `save` replaces all rows (the list is tens of items — simplicity beats diffing at this scale), assigning `sortIndex` by position. `load` sorts by `(isDone, sortIndex)`, and if more than one row has `isActive`, the first in sort order wins.
-- [ ] **Step 4: Point `AppDelegate` at the shared container.** Task 5 wired `LazySessionStore { try SwiftDataSessionStore() }`; now that a shared container exists it becomes `LazySessionStore { try SwiftDataSessionStore(container: AppModelContainer.shared()) }`, so the app opens one container rather than two.
-- [ ] **Step 5: Run tests** — `swift test`. Expected: all pass, including the existing `SwiftDataSessionStoreTests`.
-- [ ] **Step 6: Commit** — `feat(tasks): persist tasks in a container shared with sessions`
+- [x] **Step 2: Run and watch fail** — `swift test --filter SwiftDataTaskStoreTests`. Expected: compile failure.
+- [x] **Step 3: Implement.** `AppModelContainer.make` builds one `ModelContainer(for: SessionEntity.self, TaskEntity.self, configurations:)`. Both stores gain a `init(container:)` alongside the existing convenience `init(inMemory:) throws`. `TaskEntity` carries `id, title, isDone, completedPomodoros, createdAt, sortIndex, isActive`. `save` replaces all rows (the list is tens of items — simplicity beats diffing at this scale), assigning `sortIndex` by position. `load` sorts by `(isDone, sortIndex)`, and if more than one row has `isActive`, the first in sort order wins.
+- [x] **Step 4: Point `AppDelegate` at the shared container.** Task 5 wired `LazySessionStore { try SwiftDataSessionStore() }`; now that a shared container exists it becomes `LazySessionStore { try SwiftDataSessionStore(container: AppModelContainer.shared()) }`, so the app opens one container rather than two.
+- [x] **Step 5: Run tests** — `swift test`. Expected: all pass, including the existing `SwiftDataSessionStoreTests`.
+- [x] **Step 6: Commit** — `feat(tasks): persist tasks in a container shared with sessions`
 
 ---
 
@@ -599,7 +599,7 @@ import Testing
 **Interfaces:**
 - Produces: `FocusSessionRecord.taskID: UUID?` (defaulted `nil` so existing call sites compile unchanged); `protocol ActiveTaskProviding: AnyObject { var activeTaskID: UUID? { get }; func creditFocusSession(to id: UUID) }`; `TimerViewModel.init(..., tasks: ActiveTaskProviding? = nil)`.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
 
 ```swift
 import Foundation
@@ -669,8 +669,8 @@ import Testing
 }
 ```
 
-- [ ] **Step 2: Run and watch fail** — `swift test --filter TimerViewModelTaskAttribution`. Expected: compile failure.
-- [ ] **Step 3: Implement.** Add `taskID` to `FocusSessionRecord` (last parameter, defaulted `nil`) and to `SessionEntity` as an optional stored property mapped through `asRecord`. In `TimerViewModel.completePhase`, inside the existing `if finished == .focus` branch:
+- [x] **Step 2: Run and watch fail** — `swift test --filter TimerViewModelTaskAttribution`. Expected: compile failure.
+- [x] **Step 3: Implement.** Add `taskID` to `FocusSessionRecord` (last parameter, defaulted `nil`) and to `SessionEntity` as an optional stored property mapped through `asRecord`. In `TimerViewModel.completePhase`, inside the existing `if finished == .focus` branch:
 
 ```swift
 let taskID = tasks?.activeTaskID
@@ -680,8 +680,8 @@ sessionRecorder?.record(
 if let taskID { tasks?.creditFocusSession(to: taskID) }
 ```
 
-- [ ] **Step 4: Run tests** — `swift test`. Expected: all pass, existing timer tests unchanged.
-- [ ] **Step 5: Commit** — `feat(tasks): attribute completed focus sessions to the active task`
+- [x] **Step 4: Run tests** — `swift test`. Expected: all pass, existing timer tests unchanged.
+- [x] **Step 5: Commit** — `feat(tasks): attribute completed focus sessions to the active task`
 
 ---
 
@@ -695,7 +695,7 @@ if let taskID { tasks?.creditFocusSession(to: taskID) }
 - Consumes: `TaskList`, `TaskStoring`, `ActiveTaskProviding`.
 - Produces: `TasksViewModel(store: @escaping () throws -> TaskStoring, clock: Clock = SystemClock())` with `items`, `doneItems`, `activeItem`, `add(_:)`, `toggleDone(_:)`, `delete(_:)`, `setActive(_:)`, `move(fromOffsets:toOffset:)`.
 
-- [ ] **Step 1: Write the failing tests:**
+- [x] **Step 1: Write the failing tests:**
 
 ```swift
 @MainActor final class TaskStoreSpy: TaskStoring {
@@ -751,10 +751,10 @@ if let taskID { tasks?.creditFocusSession(to: taskID) }
 }
 ```
 
-- [ ] **Step 2: Run and watch fail** — `swift test --filter TasksViewModelTests`. Expected: compile failure.
-- [ ] **Step 3: Implement** — `@MainActor @Observable final class TasksViewModel: ActiveTaskProviding`, holding `private var loaded: TaskList?` and a `list` accessor that loads on first touch (resolving the store factory once, tolerating a throw by leaving `store` nil). Every mutation applies to `list` then calls `store?.save(list)`.
-- [ ] **Step 4: Run tests** — `swift test`. Expected: all pass.
-- [ ] **Step 5: Commit** — `feat(tasks): add TasksViewModel with lazy store and write-through`
+- [x] **Step 2: Run and watch fail** — `swift test --filter TasksViewModelTests`. Expected: compile failure.
+- [x] **Step 3: Implement** — `@MainActor @Observable final class TasksViewModel: ActiveTaskProviding`, holding `private var loaded: TaskList?` and a `list` accessor that loads on first touch (resolving the store factory once, tolerating a throw by leaving `store` nil). Every mutation applies to `list` then calls `store?.save(list)`.
+- [x] **Step 4: Run tests** — `swift test`. Expected: all pass.
+- [x] **Step 5: Commit** — `feat(tasks): add TasksViewModel with lazy store and write-through`
 
 ---
 
@@ -767,12 +767,12 @@ if let taskID { tasks?.creditFocusSession(to: taskID) }
 **Interfaces:**
 - Consumes: `TasksViewModel` (Task 9), `RootPopoverView(delegate:)` (Task 5).
 
-- [ ] **Step 1: Add the tab case** — `case tasks` between `.timer` and `.stats` in `PopoverTab`, symbol `checklist`, label `"Tasks"`.
-- [ ] **Step 2: Build `TaskRow`** — a completion button (`circle` / `checkmark.circle.fill`), the title (struck through and secondary when done), a pomodoro count badge shown only when `completedPomodoros > 0`, and an active indicator dot in `DesignTokens.accent(for: .focus)`. Tapping the row calls `onActivate`. `.contextMenu` offers Delete. Height `DesignTokens.rowMinHeight`.
-- [ ] **Step 3: Build `TasksView`** — a `TextField` bound to `@State private var draft` that calls `vm.add(draft)` on submit and clears; open rows; a separator and the done rows when non-empty; empty state text "No tasks yet" when the list is empty. Width `DesignTokens.menuWidth`, wrapped in a `ScrollView` with `.frame(maxHeight: 320)`.
-- [ ] **Step 4: Wire it up** — `AppDelegate` gains `let tasksVM = TasksViewModel(store: { try SwiftDataTaskStore(container: AppModelContainer.shared()) })` constructed in `init` (cheap — its store is lazy), passed to `TimerViewModel(..., tasks: tasksVM)`; `RootPopoverView` renders `case .tasks: TasksView(vm: delegate.tasksVM)`.
-- [ ] **Step 5: Build and exercise** — `xcodegen generate && xcodebuild ... build`, launch, add two tasks, complete one, activate the other. Expected: BUILD SUCCEEDED and the list behaves.
-- [ ] **Step 6: Commit** — `feat(tasks): add the Tasks tab`
+- [x] **Step 1: Add the tab case** — `case tasks` between `.timer` and `.stats` in `PopoverTab`, symbol `checklist`, label `"Tasks"`.
+- [x] **Step 2: Build `TaskRow`** — a completion button (`circle` / `checkmark.circle.fill`), the title (struck through and secondary when done), a pomodoro count badge shown only when `completedPomodoros > 0`, and an active indicator dot in `DesignTokens.accent(for: .focus)`. Tapping the row calls `onActivate`. `.contextMenu` offers Delete. Height `DesignTokens.rowMinHeight`.
+- [x] **Step 3: Build `TasksView`** — a `TextField` bound to `@State private var draft` that calls `vm.add(draft)` on submit and clears; open rows; a separator and the done rows when non-empty; empty state text "No tasks yet" when the list is empty. Width `DesignTokens.menuWidth`, wrapped in a `ScrollView` with `.frame(maxHeight: 320)`.
+- [x] **Step 4: Wire it up** — `AppDelegate` gains `let tasksVM = TasksViewModel(store: { try SwiftDataTaskStore(container: AppModelContainer.shared()) })` constructed in `init` (cheap — its store is lazy), passed to `TimerViewModel(..., tasks: tasksVM)`; `RootPopoverView` renders `case .tasks: TasksView(vm: delegate.tasksVM)`.
+- [x] **Step 5: Build and exercise** — `xcodegen generate && xcodebuild ... build`, launch, add two tasks, complete one, activate the other. Expected: BUILD SUCCEEDED and the list behaves.
+- [x] **Step 6: Commit** — `feat(tasks): add the Tasks tab`
 
 ---
 
@@ -782,18 +782,45 @@ if let taskID { tasks?.creditFocusSession(to: taskID) }
 - Create: `Features/Tasks/ActiveTaskChip.swift`
 - Modify: `Features/Timer/TimerPopoverView.swift`, `Features/MenuBar/RootPopoverView.swift`
 
-- [ ] **Step 1: Build `ActiveTaskChip`** — takes `vm: TasksViewModel` and `onPick: () -> Void`. Shows the active item's title plus its pomodoro count, or "No task selected" in `DesignTokens.secondaryText` when `activeItem` is nil; tapping calls `onPick`. Background `DesignTokens.surfaceContainerHigh`, corner radius `DesignTokens.radiusControl`. It reads only `TasksViewModel`, so timer ticks don't invalidate it.
-- [ ] **Step 2: Place it** in `TimerPopoverView` between `controls` and `SessionList`, threading `tasksVM` and an `onPickTask` closure through from `RootPopoverView`, which sets `tab = .tasks`.
-- [ ] **Step 3: Build and exercise** — activate a task, confirm the chip shows it on the Timer tab and that tapping the chip with no active task jumps to Tasks.
-- [ ] **Step 4: Commit** — `feat(tasks): show the active task on the timer screen`
+- [x] **Step 1: Build `ActiveTaskChip`** — takes `vm: TasksViewModel` and `onPick: () -> Void`. Shows the active item's title plus its pomodoro count, or "No task selected" in `DesignTokens.secondaryText` when `activeItem` is nil; tapping calls `onPick`. Background `DesignTokens.surfaceContainerHigh`, corner radius `DesignTokens.radiusControl`. It reads only `TasksViewModel`, so timer ticks don't invalidate it.
+- [x] **Step 2: Place it** in `TimerPopoverView` between `controls` and `SessionList`, threading `tasksVM` and an `onPickTask` closure through from `RootPopoverView`, which sets `tab = .tasks`.
+- [x] **Step 3: Build and exercise** — activate a task, confirm the chip shows it on the Timer tab and that tapping the chip with no active task jumps to Tasks.
+- [x] **Step 4: Commit** — `feat(tasks): show the active task on the timer screen`
 
 ---
 
 ### Task 12: Verify and measure
 
-- [ ] **Step 1: Full kit suite** — `swift test`. Expected: every test passes; record the count.
-- [ ] **Step 2: App build** — `xcodegen generate && xcodebuild ... build`. Expected: BUILD SUCCEEDED.
+- [x] **Step 1: Full kit suite** — `swift test`. Expected: every test passes; record the count.
+- [x] **Step 2: App build** — `xcodegen generate && xcodebuild ... build`. Expected: BUILD SUCCEEDED.
 - [ ] **Step 3: Measure 1a** — run a focus session with the popover open and `sample FocusFlow 10` before and after the change (compare against the pre-Task-1 commit). Record CPU numbers.
 - [ ] **Step 4: Measure 1b** — timestamp from `applicationWillFinishLaunching` to the first `MenuBarLabel` body evaluation, debug build, before and after. Record milliseconds.
 - [ ] **Step 5: End-to-end check** — activate a task, run a short focus phase to completion, confirm the count increments and survives a relaunch.
-- [ ] **Step 6: Commit** — `docs: record task-list and performance-pass measurements`
+- [x] **Step 6: Commit** — `docs: record task-list and performance-pass results`
+
+## Results (2026-08-03)
+
+**Done and verified:**
+
+- 109 kit tests pass (`swift test`), up from 64. App builds and launches clean — no
+  crash reports, nothing in `log show` for the process.
+- **1b measured directly.** With the app freshly launched and the popover never opened,
+  `lsof` on the process shows no `.store`/`.sqlite` handle: the SwiftData container is not
+  opened at launch. Previously `AppDelegate.init` ran `try? SwiftDataSessionStore()`
+  unconditionally, so the container was always opened on the launch path.
+- **1c proved by test**, which is the more durable check anyway: `allSessions()` runs once
+  across repeated refreshes, again after a write, and again after the clock crosses
+  midnight.
+
+**Not measured — stated plainly rather than asserted:**
+
+- **1a (per-tick invalidation)** is verified structurally only: `TimerPopoverView` no longer
+  reads `displayTime` or `progress` (grep-confirmed), so a tick can only invalidate
+  `TimerReadout`. A CPU before/after needs the popover held open, which needs a click on the
+  menu-bar item that cannot be driven from here. No CPU numbers are claimed.
+- **Launch wall-clock delta** is likewise unmeasured; the container-open evidence above is
+  the direct form of the claim, and a millisecond figure would be dominated by dyld noise.
+- **End-to-end run** (activate a task, complete a focus phase, confirm the count survives
+  relaunch) needs the same UI interaction. The path is covered by unit tests at every seam —
+  attribution, credit, write-through, and store round-trip — but has not been exercised
+  through the real UI.

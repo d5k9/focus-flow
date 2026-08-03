@@ -42,6 +42,14 @@ final class SoundSpy: SoundPlaying {
     func record(_ session: FocusSessionRecord) { recorded.append(session) }
 }
 
+/// Records sessions and reads them back — stands in for the SwiftData store.
+@MainActor final class SessionRecorderAndReaderSpy: SessionRecording, SessionReading {
+    private(set) var recorded: [FocusSessionRecord] = []
+    var revision = 0
+    func record(_ session: FocusSessionRecord) { recorded.append(session); revision += 1 }
+    func allSessions() -> [FocusSessionRecord] { recorded }
+}
+
 /// Records calls made to the ambient audio engine.
 final class AudioEngineSpy: AmbientAudioEngine {
     private(set) var playing: Set<String> = []

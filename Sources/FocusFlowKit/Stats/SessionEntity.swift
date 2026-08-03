@@ -35,10 +35,13 @@ public final class SwiftDataSessionStore: SessionRecording, SessionReading {
         revision += 1
     }
 
-    /// Returns all sessions newest-first (by `startedAt`).
+    /// Returns all sessions newest-first (by `startedAt`). Fetches only the
+    /// properties `asRecord` reads — `id` included, since leaving it out
+    /// would fault every row straight back to the store.
     public func allSessions() -> [FocusSessionRecord] {
-        let descriptor = FetchDescriptor<SessionEntity>(
+        var descriptor = FetchDescriptor<SessionEntity>(
             sortBy: [SortDescriptor(\.startedAt, order: .reverse)])
+        descriptor.propertiesToFetch = [\.id, \.startedAt, \.duration]
         return ((try? context.fetch(descriptor)) ?? []).map(\.asRecord)
     }
 }

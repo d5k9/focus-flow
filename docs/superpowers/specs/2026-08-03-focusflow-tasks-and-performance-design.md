@@ -30,14 +30,22 @@ second — here that drags the header, the transport controls, and `SessionList`
 the ring. Adding the active-task chip to that screen would enlarge the same problem.
 
 **Fix:** extract the ring, the `MM:SS` readout, and the phase label into a `TimerReadout`
-view. It is then the only body reading per-second state; the rest of the screen reads only
-`vm.phase` and `vm.isRunning` and re-runs on phase changes alone.
+view — a separate `View` struct, not another computed property on `TimerPopoverView`, since
+computed properties do not create a separate body to invalidate. It is then the only body
+reading per-second state; the rest of the screen reads only `vm.phase` and `vm.isRunning`
+and re-runs on phase changes alone.
+
+**The trap:** `TimerReadout` must take the view model (`TimerReadout(vm: vm)`) and read
+`displayTime`/`progress` inside its own body. Passing pre-read values
+(`TimerReadout(progress: vm.progress, time: vm.displayTime)`) moves the observable read back
+into the parent body and undoes the entire fix while looking correct.
 
 `MenuBarLabel` legitimately re-renders every second — that is the feature — and is left
 alone.
 
 **Verify:** CPU sample of the app with a session running and the popover open, before and
-after. Report the numbers.
+after. Report the numbers. Note the scope of the win honestly: with the popover closed, the
+per-second cost is the menu-bar label alone and this fix changes nothing.
 
 ### 1b. Launch path does avoidable work
 
@@ -54,12 +62,18 @@ Only the timer is needed at launch.
 
 - `StatsViewModel` and `SoundMixerViewModel` (and the audio engine and second ticker they
   own) become `lazy var` on `AppDelegate`, constructed on first visit to their tab.
-- `TimerViewModel` requires a `SessionRecording` at init, so it receives a
-  `LazySessionStore` façade: a `SessionRecording` + `SessionReading` wrapper holding a
-  `() throws -> SwiftDataSessionStore` factory, resolving the real store on first use —
-  which is the first completed focus session, minutes after launch. On resolution failure
-  it degrades to no-op writes and empty reads, replacing today's `try?`-in-init and the
-  `EmptySessionReader` fallback.
+- **`RootPopoverView` must stop taking them as eager parameters**, or the laziness is
+  cosmetic: `FocusFlowApp`'s scene body passes `appDelegate.statsVM` and
+  `appDelegate.soundMixerVM` as init arguments today, so building the popover content would
+  force every `lazy var` at once. The view instead receives the delegate (or per-tab
+  provider closures) and resolves each view model inside the `switch` arm for the selected
+  tab, so only the visited tab's model is built.
+- `TimerViewModel` takes an optional `SessionRecording` at init and `AppDelegate` supplies
+  one, so it receives a `LazySessionStore` façade: a `SessionRecording` + `SessionReading`
+  wrapper holding a `() throws -> SwiftDataSessionStore` factory, resolving the real store
+  on first use — which is the first completed focus session, minutes after launch. On
+  resolution failure it degrades to no-op writes and empty reads, replacing today's
+  `try?`-in-init and the `EmptySessionReader` fallback.
 
 **Verify:** signpost or timestamp from `applicationWillFinishLaunching` to the menu-bar
 item appearing, debug build, before and after. Report the numbers.
@@ -75,11 +89,20 @@ changed since the last visit. Cost grows without bound as history accumulates.
 - `SessionReading` gains `var revision: Int { get }`. `SwiftDataSessionStore` increments it
   on every successful write. `StatsViewModel.refresh()` returns early when the revision
   matches the one it last aggregated.
-- The fetch narrows to the two properties the aggregator reads (`startedAt`, `duration`)
-  via `propertiesToFetch`, avoiding full object hydration.
+- **The cache key is `(revision, startOfDay(now))`, not the revision alone.** `StatsSummary`
+  depends on the current date as well as the data: `last7Days` is a window ending today and
+  `currentStreakDays` counts back from today. Keying on revision alone would leave the
+  panel showing yesterday's window for a user who leaves the app running overnight and
+  records nothing — a stale-cache bug introduced by the optimisation itself. The stored key
+  starts as `nil` so the first `refresh()` always aggregates.
+- The fetch narrows to the properties the aggregator needs via `propertiesToFetch`. That is
+  `startedAt` and `duration` for the aggregation, **plus `id`**, because `asRecord` builds a
+  `FocusSessionRecord` with it — omitting `id` would fault every row straight back to the
+  store and make the partial fetch slower than the full one.
 
 **Verify:** a `SessionReading` spy asserting `allSessions()` is called exactly once across
-repeated `refresh()` calls with no writes in between, and again after a write.
+repeated `refresh()` calls with no writes in between, again after a write, and again when
+only the clock has crossed midnight (injectable `Clock`, already a dependency).
 
 ### Explicitly not in scope
 
@@ -113,8 +136,10 @@ Mutations: `add(title:)`, `rename(_:to:)`, `toggleDone(_:)`, `delete(_:)`, `setA
 
 Rules, fixed here so implementation has nothing to invent:
 
-- Open items sort before done items. Within each group, insertion order is preserved, and
-  `move` reorders within the open group only.
+- Open items sort before done items. Within each group, insertion order is preserved.
+  `move(from:to:)` reorders within the open group only, and **its indices are into the open
+  sub-list, not into `items`** — the UI only offers reordering there, and index spaces that
+  silently differ are how off-by-one bugs get written.
 - Marking the active item done clears `activeID`. Deleting the active item clears
   `activeID`. Un-marking a done item does not restore active status.
 - `creditPomodoro(to:)` increments `completedPomodoros`; an id not in the list is ignored
@@ -154,7 +179,13 @@ Both representations exist on purpose:
 ### Persistence: `Tasks/TaskEntity.swift`, `Tasks/SwiftDataTaskStore.swift`
 
 - `TaskEntity` (`@Model`) mirrors `TaskItem`, plus a `sortIndex: Int` to persist ordering
-  and an `isActive: Bool` (at most one true) to persist the selection across launches.
+  and an `isActive: Bool` to persist the selection across launches. `sortIndex` is assigned
+  as `max + 1` on add, and rewritten for the whole open group after a `move` — simple and
+  correct at this scale, where the list is tens of rows, not thousands.
+- `load()` reconstructs the list ordered by `(isDone, sortIndex)` and is defensive about
+  invariants the type system does not enforce: if more than one row has `isActive` set (a
+  crash between writes, say), the first in sort order wins and the rest are cleared on the
+  next write.
 - `SwiftDataTaskStore` conforms to a `TaskStoring` protocol (`@MainActor`, matching the
   isolation rationale already documented in `SessionRecording.swift`), with `load() ->
   TaskList` and write-through mutations. Writes are best-effort `try?`, as in

@@ -8,13 +8,15 @@ public final class SessionEntity {
     public var id: UUID
     public var startedAt: Date
     public var duration: TimeInterval
+    /// Optional so the addition is a lightweight migration for existing stores.
+    public var taskID: UUID?
 
-    public init(id: UUID, startedAt: Date, duration: TimeInterval) {
-        self.id = id; self.startedAt = startedAt; self.duration = duration
+    public init(id: UUID, startedAt: Date, duration: TimeInterval, taskID: UUID? = nil) {
+        self.id = id; self.startedAt = startedAt; self.duration = duration; self.taskID = taskID
     }
 
     var asRecord: FocusSessionRecord {
-        FocusSessionRecord(id: id, startedAt: startedAt, duration: duration)
+        FocusSessionRecord(id: id, startedAt: startedAt, duration: duration, taskID: taskID)
     }
 }
 
@@ -33,7 +35,8 @@ public final class SwiftDataSessionStore: SessionRecording, SessionReading {
     }
 
     public func record(_ session: FocusSessionRecord) {
-        context.insert(SessionEntity(id: session.id, startedAt: session.startedAt, duration: session.duration))
+        context.insert(SessionEntity(id: session.id, startedAt: session.startedAt,
+                                     duration: session.duration, taskID: session.taskID))
         try? context.save()   // best-effort; never crash on persistence failure
         revision += 1
     }
@@ -44,7 +47,7 @@ public final class SwiftDataSessionStore: SessionRecording, SessionReading {
     public func allSessions() -> [FocusSessionRecord] {
         var descriptor = FetchDescriptor<SessionEntity>(
             sortBy: [SortDescriptor(\.startedAt, order: .reverse)])
-        descriptor.propertiesToFetch = [\.id, \.startedAt, \.duration]
+        descriptor.propertiesToFetch = [\.id, \.startedAt, \.duration, \.taskID]
         return ((try? context.fetch(descriptor)) ?? []).map(\.asRecord)
     }
 }

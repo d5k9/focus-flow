@@ -10,11 +10,16 @@ import Observation
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings: SettingsStore
     let timerVM: TimerViewModel
-    let statsVM: StatsViewModel
-    let soundMixerVM: SoundMixerViewModel
-    private let sessionStore: SwiftDataSessionStore?
+    private let sessionStore: LazySessionStore
     private let notifications: NotificationScheduling
     private let sound: SoundPlaying
+
+    /// Built on first visit to their tab, not at launch. `sessionStore` is
+    /// itself lazy, so touching `statsVM` is what finally opens the container.
+    lazy var statsVM = StatsViewModel(reader: sessionStore)
+    lazy var soundMixerVM = SoundMixerViewModel(
+        engine: AVAmbientAudioEngine(),
+        ticker: DispatchSourceTimerTicker())
 
     private var onboardingWindow: NSWindow?
     private var preferencesWindow: NSWindow?
@@ -29,19 +34,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.settings = settings
         self.notifications = notifications
         self.sound = sound
-        let store = try? SwiftDataSessionStore()
-        self.sessionStore = store
-        self.statsVM = StatsViewModel(reader: store ?? EmptySessionReader())
+        // Constructing this touches no storage — the container is opened on
+        // the first recorded session.
+        let sessionStore = LazySessionStore { try SwiftDataSessionStore() }
+        self.sessionStore = sessionStore
         self.timerVM = TimerViewModel(
             settings: settings.pomodoroSettings,
             ticker: DispatchSourceTimerTicker(),
             notifications: notifications,
             sound: sound,
-            sessionRecorder: store
-        )
-        self.soundMixerVM = SoundMixerViewModel(
-            engine: AVAmbientAudioEngine(),
-            ticker: DispatchSourceTimerTicker()
+            sessionRecorder: sessionStore
         )
         super.init()
     }
@@ -109,11 +111,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         window.contentView = NSHostingView(rootView: content)
         return window
     }
-}
-
-/// Fallback reader used when `SwiftDataSessionStore` fails to initialise.
-/// Presents an empty stats state rather than crashing.
-@MainActor private final class EmptySessionReader: SessionReading {
-    func allSessions() -> [FocusSessionRecord] { [] }
-    var revision: Int { 0 }
 }

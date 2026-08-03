@@ -115,4 +115,5 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// Presents an empty stats state rather than crashing.
 @MainActor private final class EmptySessionReader: SessionReading {
     func allSessions() -> [FocusSessionRecord] { [] }
+    var revision: Int { 0 }
 }

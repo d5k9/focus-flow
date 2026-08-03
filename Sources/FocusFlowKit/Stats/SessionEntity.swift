@@ -22,6 +22,7 @@ public final class SessionEntity {
 public final class SwiftDataSessionStore: SessionRecording, SessionReading {
     private let container: ModelContainer
     private var context: ModelContext { container.mainContext }
+    public private(set) var revision = 0
 
     public init(inMemory: Bool = false) throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: inMemory)
@@ -31,6 +32,7 @@ public final class SwiftDataSessionStore: SessionRecording, SessionReading {
     public func record(_ session: FocusSessionRecord) {
         context.insert(SessionEntity(id: session.id, startedAt: session.startedAt, duration: session.duration))
         try? context.save()   // best-effort; never crash on persistence failure
+        revision += 1
     }
 
     /// Returns all sessions newest-first (by `startedAt`).

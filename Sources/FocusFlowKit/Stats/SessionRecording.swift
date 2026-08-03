@@ -18,4 +18,9 @@ public protocol SessionRecording: AnyObject {
 @MainActor
 public protocol SessionReading: AnyObject {
     func allSessions() -> [FocusSessionRecord]
+
+    /// Bumped on every successful write. Lets a reader-side cache tell
+    /// "nothing has changed" from "I have not looked yet" without refetching
+    /// and re-aggregating the whole history.
+    var revision: Int { get }
 }

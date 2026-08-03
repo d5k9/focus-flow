@@ -3,7 +3,9 @@ import FocusFlowKit
 
 struct TimerPopoverView: View {
     let vm: TimerViewModel
+    let tasksVM: TasksViewModel
     var onOpenPreferences: () -> Void = {}
+    var onPickTask: () -> Void = {}
 
     private var accent: Color { DesignTokens.accent(for: vm.phase) }
 
@@ -12,6 +14,7 @@ struct TimerPopoverView: View {
             header
             TimerReadout(vm: vm)
             controls
+            ActiveTaskChip(vm: tasksVM, onPick: onPickTask)
             SessionList(currentPhase: vm.phase)
         }
         .padding(DesignTokens.containerPadding)

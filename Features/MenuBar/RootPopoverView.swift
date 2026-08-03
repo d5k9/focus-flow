@@ -13,10 +13,21 @@ struct RootPopoverView: View {
     var body: some View {
         VStack(spacing: 0) {
             switch tab {
-            case .timer: TimerPopoverView(vm: delegate.timerVM, onOpenPreferences: onOpenPreferences)
+            case .timer:
+                TimerPopoverView(
+                    vm: delegate.timerVM,
+                    tasksVM: delegate.tasksVM,
+                    onOpenPreferences: onOpenPreferences,
+                    onPickTask: { tab = .tasks })
+            case .tasks: TasksView(vm: delegate.tasksVM)
             case .stats: StatsView(vm: delegate.statsVM)
             case .sounds: SoundMixerView(vm: delegate.soundMixerVM)
-            case .settings: TimerPopoverView(vm: delegate.timerVM, onOpenPreferences: onOpenPreferences)
+            case .settings:
+                TimerPopoverView(
+                    vm: delegate.timerVM,
+                    tasksVM: delegate.tasksVM,
+                    onOpenPreferences: onOpenPreferences,
+                    onPickTask: { tab = .tasks })
             }
             PopoverTabBar(selection: $tab, onSettings: onOpenPreferences)
                 .frame(width: DesignTokens.menuWidth)

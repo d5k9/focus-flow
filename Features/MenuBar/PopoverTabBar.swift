@@ -1,8 +1,8 @@
 import SwiftUI
 
-enum PopoverTab: CaseIterable { case timer, stats, sounds, settings
-    var symbol: String { switch self { case .timer: "timer"; case .stats: "chart.bar.fill"; case .sounds: "speaker.wave.2.fill"; case .settings: "gearshape.fill" } }
-    var label: String { switch self { case .timer: "Timer"; case .stats: "Stats"; case .sounds: "Sounds"; case .settings: "Settings" } }
+enum PopoverTab: CaseIterable { case timer, tasks, stats, sounds, settings
+    var symbol: String { switch self { case .timer: "timer"; case .tasks: "checklist"; case .stats: "chart.bar.fill"; case .sounds: "speaker.wave.2.fill"; case .settings: "gearshape.fill" } }
+    var label: String { switch self { case .timer: "Timer"; case .tasks: "Tasks"; case .stats: "Stats"; case .sounds: "Sounds"; case .settings: "Settings" } }
 }
 
 struct PopoverTabBar: View {

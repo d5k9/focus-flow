@@ -10,6 +10,9 @@ import Observation
 final class AppDelegate: NSObject, NSApplicationDelegate {
     let settings: SettingsStore
     let timerVM: TimerViewModel
+    /// Eager because the timer needs it for attribution — cheap, since its
+    /// own store stays closed until the list is first read.
+    let tasksVM: TasksViewModel
     private let sessionStore: LazySessionStore
     private let notifications: NotificationScheduling
     private let sound: SoundPlaying
@@ -36,14 +39,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.sound = sound
         // Constructing this touches no storage — the container is opened on
         // the first recorded session.
-        let sessionStore = LazySessionStore { try SwiftDataSessionStore() }
+        let sessionStore = LazySessionStore {
+            try SwiftDataSessionStore(container: AppModelContainer.shared())
+        }
         self.sessionStore = sessionStore
+        let tasksVM = TasksViewModel(store: {
+            try SwiftDataTaskStore(container: AppModelContainer.shared())
+        })
+        self.tasksVM = tasksVM
         self.timerVM = TimerViewModel(
             settings: settings.pomodoroSettings,
             ticker: DispatchSourceTimerTicker(),
             notifications: notifications,
             sound: sound,
-            sessionRecorder: sessionStore
+            sessionRecorder: sessionStore,
+            tasks: tasksVM
         )
         super.init()
     }

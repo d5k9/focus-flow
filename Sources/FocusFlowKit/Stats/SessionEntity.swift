@@ -24,9 +24,12 @@ public final class SwiftDataSessionStore: SessionRecording, SessionReading {
     private var context: ModelContext { container.mainContext }
     public private(set) var revision = 0
 
-    public init(inMemory: Bool = false) throws {
-        let config = ModelConfiguration(isStoredInMemoryOnly: inMemory)
-        self.container = try ModelContainer(for: SessionEntity.self, configurations: config)
+    public init(container: ModelContainer) {
+        self.container = container
+    }
+
+    public convenience init(inMemory: Bool = false) throws {
+        self.init(container: try AppModelContainer.make(inMemory: inMemory))
     }
 
     public func record(_ session: FocusSessionRecord) {

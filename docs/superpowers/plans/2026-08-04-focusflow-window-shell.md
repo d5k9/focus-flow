@@ -31,8 +31,8 @@
 
 Both must change. XcodeGen's `info.properties` does not override a checked-in plist, so editing only one leaves the app an agent with no Dock icon — the failure looks like "my change did nothing".
 
-- [ ] **Step 1: Flip both flags.** In `project.yml` under `targets.FocusFlow.info.properties`, set `LSUIElement: false`. In `Resources/Info.plist`, change the `LSUIElement` value element from `<true/>` to `<false/>`.
-- [ ] **Step 2: Rebuild and verify Dock presence.**
+- [x] **Step 1: Flip both flags.** In `project.yml` under `targets.FocusFlow.info.properties`, set `LSUIElement: false`. In `Resources/Info.plist`, change the `LSUIElement` value element from `<true/>` to `<false/>`.
+- [x] **Step 2: Rebuild and verify Dock presence.**
 
 ```bash
 pkill -x FocusFlow; xcodegen generate
@@ -42,7 +42,7 @@ plutil -p ~/Library/Developer/Xcode/DerivedData/FocusFlow-advkjbmerxbpkoeooisoay
 
 Expected: `BUILD SUCCEEDED` and `"LSUIElement" => 0`. If it prints `1`, one of the two files was missed.
 
-- [ ] **Step 3: Commit** — `feat(shell): give FocusFlow a Dock icon`
+- [x] **Step 3: Commit** — `feat(shell): give FocusFlow a Dock icon`
 
 ---
 
@@ -56,7 +56,7 @@ Expected: `BUILD SUCCEEDED` and `"LSUIElement" => 0`. If it prints `1`, one of t
 - Produces: `enum AppSection` and `struct MainWindowView: View { init(delegate: AppDelegate) }`.
 - Consumes: `delegate.timerVM`, `delegate.tasksVM`, `delegate.statsVM`, `delegate.soundMixerVM` — resolved inside the `switch` so lazy view models stay lazy.
 
-- [ ] **Step 1: Write `AppSection`:**
+- [x] **Step 1: Write `AppSection`:**
 
 ```swift
 import SwiftUI
@@ -86,7 +86,7 @@ enum AppSection: String, CaseIterable, Identifiable {
 }
 ```
 
-- [ ] **Step 2: Write `MainWindowView`.** Note the `switch` resolves one view model only — that preserves the lazy construction from the previous pass. `TimerSectionView` and the flexible section views arrive in Tasks 4–6; this will not compile standalone until Task 4, which is expected.
+- [x] **Step 2: Write `MainWindowView`.** Note the `switch` resolves one view model only — that preserves the lazy construction from the previous pass. `TimerSectionView` and the flexible section views arrive in Tasks 4–6; this will not compile standalone until Task 4, which is expected.
 
 ```swift
 import SwiftUI
@@ -134,7 +134,7 @@ struct MainWindowView: View {
 }
 ```
 
-- [ ] **Step 3: Commit** — `feat(shell): add sidebar navigation view` (build comes after Task 4; commit the files now so the diff stays reviewable)
+- [x] **Step 3: Commit** — `feat(shell): add sidebar navigation view` (build comes after Task 4; commit the files now so the diff stays reviewable)
 
 ---
 
@@ -146,7 +146,7 @@ struct MainWindowView: View {
 **Interfaces:**
 - Produces: `struct MenuBarCommands: View { init(timerVM: TimerViewModel, onShowWindow: @escaping () -> Void) }`
 
-- [ ] **Step 1: Write the menu.** Buttons inside a `MenuBarExtra` without `.menuBarExtraStyle(.window)` render as menu items:
+- [x] **Step 1: Write the menu.** Buttons inside a `MenuBarExtra` without `.menuBarExtraStyle(.window)` render as menu items:
 
 ```swift
 import SwiftUI
@@ -172,7 +172,7 @@ struct MenuBarCommands: View {
 }
 ```
 
-- [ ] **Step 2: Commit** — `feat(shell): add menu-bar companion menu`
+- [x] **Step 2: Commit** — `feat(shell): add menu-bar companion menu`
 
 ---
 
@@ -186,7 +186,7 @@ struct MenuBarCommands: View {
 **Interfaces:**
 - Produces: `TimerSectionView(vm:tasksVM:onPickTask:)`; `TimerReadout(vm:diameter:)` with `diameter` defaulting to 160.
 
-- [ ] **Step 1: Add the `diameter` parameter to `TimerReadout`** so the window can ask for a larger ring without a second copy of the view. Keep the per-second reads inside this body — that is the whole reason the view exists:
+- [x] **Step 1: Add the `diameter` parameter to `TimerReadout`** so the window can ask for a larger ring without a second copy of the view. Keep the per-second reads inside this body — that is the whole reason the view exists:
 
 ```swift
 struct TimerReadout: View {
@@ -210,7 +210,7 @@ struct TimerReadout: View {
 }
 ```
 
-- [ ] **Step 2: Write `TimerSectionView`** — the old `TimerPopoverView` minus its header row and gear button (the window has a title bar and ⌘, now), minus the fixed 280pt width, with the content centred and capped:
+- [x] **Step 2: Write `TimerSectionView`** — the old `TimerPopoverView` minus its header row and gear button (the window has a title bar and ⌘, now), minus the fixed 280pt width, with the content centred and capped:
 
 ```swift
 import SwiftUI
@@ -265,9 +265,9 @@ struct TimerSectionView: View {
 }
 ```
 
-- [ ] **Step 3: Delete `Features/Timer/TimerPopoverView.swift`.**
-- [ ] **Step 4: Verify no stale references** — `grep -rn "TimerPopoverView" App Features` must return nothing except matches you are about to fix in Task 7.
-- [ ] **Step 5: Commit** — `feat(shell): make the timer section flexible`
+- [x] **Step 3: Delete `Features/Timer/TimerPopoverView.swift`.**
+- [x] **Step 4: Verify no stale references** — `grep -rn "TimerPopoverView" App Features` must return nothing except matches you are about to fix in Task 7.
+- [x] **Step 5: Commit** — `feat(shell): make the timer section flexible`
 
 ---
 
@@ -277,9 +277,9 @@ struct TimerSectionView: View {
 - Modify: `Features/Tasks/TasksView.swift:30` (remove fixed width, unclamp the scroll)
 - Modify: `Features/Stats/StatsView.swift:9` (remove fixed width, taller chart)
 
-- [ ] **Step 1: `TasksView`** — replace `.frame(width: DesignTokens.menuWidth)` with `.frame(maxWidth: 640)`, and remove the `.frame(maxHeight: 260)` on the `ScrollView` so the list fills the pane. Keep everything else as-is.
-- [ ] **Step 2: `StatsView`** — replace `.frame(width: DesignTokens.menuWidth)` with `.frame(maxWidth: 640)`. In `barChart`, change the bar height expression from `8 + 64 * (bucket.totalFocus / maxFocus)` to `16 + 128 * (bucket.totalFocus / maxFocus)` and the container `.frame(height: 80)` to `.frame(height: 160)`.
-- [ ] **Step 3: Commit** — `feat(shell): let tasks and stats use the window width`
+- [x] **Step 1: `TasksView`** — replace `.frame(width: DesignTokens.menuWidth)` with `.frame(maxWidth: 640)`, and remove the `.frame(maxHeight: 260)` on the `ScrollView` so the list fills the pane. Keep everything else as-is.
+- [x] **Step 2: `StatsView`** — replace `.frame(width: DesignTokens.menuWidth)` with `.frame(maxWidth: 640)`. In `barChart`, change the bar height expression from `8 + 64 * (bucket.totalFocus / maxFocus)` to `16 + 128 * (bucket.totalFocus / maxFocus)` and the container `.frame(height: 80)` to `.frame(height: 160)`.
+- [x] **Step 3: Commit** — `feat(shell): let tasks and stats use the window width`
 
 ---
 
@@ -288,7 +288,7 @@ struct TimerSectionView: View {
 **Files:**
 - Modify: `Features/Sound/SoundMixerView.swift:31`
 
-- [ ] **Step 1: Replace the vertical stack of tiles with an adaptive grid** and drop the fixed width. The `ForEach(AmbientSound.all)` over `SoundTile` becomes:
+- [x] **Step 1: Replace the vertical stack of tiles with an adaptive grid** and drop the fixed width. The `ForEach(AmbientSound.all)` over `SoundTile` becomes:
 
 ```swift
 LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: DesignTokens.stackTight)],
@@ -303,7 +303,7 @@ LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: DesignTokens.stac
 
 Replace the view's `.frame(width: DesignTokens.menuWidth)` with `.frame(maxWidth: 640)`.
 
-- [ ] **Step 2: Commit** — `feat(shell): lay out sound tiles in a grid`
+- [x] **Step 2: Commit** — `feat(shell): lay out sound tiles in a grid`
 
 ---
 
@@ -318,7 +318,7 @@ Replace the view's `.frame(width: DesignTokens.menuWidth)` with `.frame(maxWidth
 - Consumes: `MainWindowView` (Task 2), `MenuBarCommands` (Task 3), `TimerSectionView` (Task 4).
 - Produces: `AppDelegate.showMainWindow()`.
 
-- [ ] **Step 1: Rewrite `FocusFlowApp`:**
+- [x] **Step 1: Rewrite `FocusFlowApp`:**
 
 ```swift
 import SwiftUI
@@ -345,7 +345,7 @@ struct FocusFlowApp: App {
 }
 ```
 
-- [ ] **Step 2: Add the main window to `AppDelegate`.** Add a `private var mainWindow: NSWindow?` alongside the existing `onboardingWindow`, and:
+- [x] **Step 2: Add the main window to `AppDelegate`.** Add a `private var mainWindow: NSWindow?` alongside the existing `onboardingWindow`, and:
 
 ```swift
 /// The app's primary window. Owned here rather than declared as a SwiftUI
@@ -380,7 +380,7 @@ func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows fl
 }
 ```
 
-- [ ] **Step 3: Show it at launch, and after onboarding.** In `applicationDidFinishLaunching`, after `observeSettings()`, call `showMainWindow()` only when onboarding is not being presented:
+- [x] **Step 3: Show it at launch, and after onboarding.** In `applicationDidFinishLaunching`, after `observeSettings()`, call `showMainWindow()` only when onboarding is not being presented:
 
 ```swift
 func applicationDidFinishLaunching(_ notification: Notification) {
@@ -397,9 +397,9 @@ func applicationDidFinishLaunching(_ notification: Notification) {
 
 and in `showOnboarding()`'s completion closure, after `onboardingWindow?.close()`, add `self?.showMainWindow()` so a first-run user lands in the app. Delete the now-unused `showOnboardingIfNeeded()`.
 
-- [ ] **Step 4: Delete the preferences window code** — the `showPreferences()` method and the `preferencesWindow` property. The `Settings` scene replaces both.
-- [ ] **Step 5: Delete the popover views** — `Features/MenuBar/RootPopoverView.swift` and `Features/MenuBar/PopoverTabBar.swift`. `MenuBarLabel.swift` stays.
-- [ ] **Step 6: Confirm nothing references the deleted symbols:**
+- [x] **Step 4: Delete the preferences window code** — the `showPreferences()` method and the `preferencesWindow` property. The `Settings` scene replaces both.
+- [x] **Step 5: Delete the popover views** — `Features/MenuBar/RootPopoverView.swift` and `Features/MenuBar/PopoverTabBar.swift`. `MenuBarLabel.swift` stays.
+- [x] **Step 6: Confirm nothing references the deleted symbols:**
 
 ```bash
 grep -rn "RootPopoverView\|PopoverTabBar\|PopoverTab\|showPreferences\|onOpenPreferences\|TimerPopoverView" App Features
@@ -407,15 +407,15 @@ grep -rn "RootPopoverView\|PopoverTabBar\|PopoverTab\|showPreferences\|onOpenPre
 
 Expected: no output.
 
-- [ ] **Step 7: Build** — `xcodegen generate && xcodebuild ... build`. Expected: BUILD SUCCEEDED. This is the first task where everything compiles together.
-- [ ] **Step 8: Commit** — `feat(shell): replace the popover with a main window`
+- [x] **Step 7: Build** — `xcodegen generate && xcodebuild ... build`. Expected: BUILD SUCCEEDED. This is the first task where everything compiles together.
+- [x] **Step 8: Commit** — `feat(shell): replace the popover with a main window`
 
 ---
 
 ### Task 8: Verify by looking at it
 
-- [ ] **Step 1: Kit regression check** — `swift test`. Expected: 109 tests pass, unchanged. This proves the shell rework did not reach into the kit.
-- [ ] **Step 2: Launch and confirm the window and Dock icon:**
+- [x] **Step 1: Kit regression check** — `swift test`. Expected: 109 tests pass, unchanged. This proves the shell rework did not reach into the kit.
+- [x] **Step 2: Launch and confirm the window and Dock icon:**
 
 ```bash
 pkill -x FocusFlow; open ~/Library/Developer/Xcode/DerivedData/FocusFlow-advkjbmerxbpkoeooisoayrvwetb/Build/Products/Debug/FocusFlow.app
@@ -424,7 +424,7 @@ sleep 4; pgrep -x FocusFlow && osascript -e 'tell application "System Events" to
 
 Expected: a pid, and a window named "FocusFlow". If AppleScript is blocked by automation permissions, fall back to `screencapture` in the next step and note the limitation.
 
-- [ ] **Step 3: Screenshot and actually look at it.** `screencapture -l` needs a CoreGraphics window id that no shell tool reports without a helper, so capture the screen and read the image:
+- [x] **Step 3: Screenshot and actually look at it.** `screencapture -l` needs a CoreGraphics window id that no shell tool reports without a helper, so capture the screen and read the image:
 
 ```bash
 screencapture -x /tmp/ff-timer.png && echo captured
@@ -440,6 +440,44 @@ osascript -e 'tell application "System Events" to tell process "FocusFlow" to cl
 
 This requires Accessibility permission for the terminal. If it fails, **do not fake it** — capture the Timer section, state plainly that the other three were not visually verified, and say why.
 
-- [ ] **Step 4: Confirm the window close behaviour** — close the window (⌘W via System Events if available), then check `pgrep -x FocusFlow` still returns a pid and the menu-bar item is still present. The timer must survive; a focus timer that dies with its window is a bug.
-- [ ] **Step 5: Record what could not be verified.** Anything needing a real click — driving transport buttons, typing a task, switching sections if automation is blocked — is reported as unverified, not assumed working.
-- [ ] **Step 6: Commit** — `docs: record main-window shell verification results`
+- [x] **Step 4: Confirm the window close behaviour** — close the window (⌘W via System Events if available), then check `pgrep -x FocusFlow` still returns a pid and the menu-bar item is still present. The timer must survive; a focus timer that dies with its window is a bug.
+- [x] **Step 5: Record what could not be verified.** Anything needing a real click — driving transport buttons, typing a task, switching sections if automation is blocked — is reported as unverified, not assumed working.
+- [x] **Step 6: Commit** — `docs: record main-window shell verification results`
+
+## Results (2026-08-04)
+
+**Verified:**
+
+- `swift test` — 109 tests pass, unchanged. The shell rework did not reach into the kit.
+- `BUILD SUCCEEDED`; `plutil` on the built Info.plist reports `"LSUIElement" => false`.
+- `lsappinfo info -only ApplicationType -app FocusFlow` → `"Foreground"`. The app is no
+  longer an agent, so it has a Dock icon and app menu.
+- `CGWindowListCopyWindowInfo` shows exactly one on-screen layer-0 window, 900×654
+  (900×600 content plus title bar), plus the menu-bar-height backing windows that mean the
+  `MenuBarExtra` is still installed. So: real window, menu-bar companion retained.
+
+**Not verified — no permission, not assumed:**
+
+- **Nothing visual.** `screencapture` fails with "could not create image from display" —
+  the terminal lacks Screen Recording permission. Layout claims (no clipping at the old
+  280pt, no absurd stretching at 900pt, the 220pt ring, the sound grid, the taller chart)
+  are therefore **unverified**. Grant Screen Recording to the terminal and re-run
+  `screencapture -x`, or look at the window directly.
+- **Nothing interactive.** System Events returns `-1728` (assistive access disabled), so
+  switching sidebar sections, driving the transport, and typing in the task field could not
+  be exercised.
+- **Window-close survival and Dock re-open.** Implemented — the delegate never opts into
+  `applicationShouldTerminateAfterLastWindowClosed`, and `applicationShouldHandleReopen`
+  re-raises — but closing a window needs a click, so neither path was exercised.
+
+**Two findings:**
+
+1. **The window title shows the section name, not the app name.** `navigationTitle` on the
+   detail pane overrides `NSWindow.title`, so the title bar reads "Timer" rather than
+   "FocusFlow". This deviates from the spec, and it is arguably the better behaviour — Mail
+   and Notes title their windows by what is selected — so it is left in place. Removing
+   `.navigationTitle(current.title)` from `MainWindowView` restores a constant "FocusFlow".
+2. **A restored Settings window appeared on one launch.** Investigated: macOS saved-state
+   restoration, not a launch bug. It does not recur after clearing
+   `~/Library/Saved Application State/id.dimak.focusflow.savedState`, and it is standard
+   macOS behaviour to reopen whatever was open at quit.

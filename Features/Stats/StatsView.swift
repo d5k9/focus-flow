@@ -6,7 +6,7 @@ struct StatsView: View {
 
     var body: some View {
         Group { if vm.isEmpty { emptyState } else { content } }
-            .frame(width: DesignTokens.menuWidth)
+            .frame(maxWidth: 640)
             .background(DesignTokens.surface)
             .foregroundStyle(DesignTokens.onSurface)
             .onAppear { vm.refresh() }
@@ -44,10 +44,10 @@ struct StatsView: View {
             ForEach(Array(vm.summary.last7Days.enumerated()), id: \.offset) { _, bucket in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(bucket.sessionCount > 0 ? DesignTokens.accent(for: .focus) : DesignTokens.surfaceContainerHigh)
-                    .frame(height: 8 + 64 * (bucket.totalFocus / maxFocus))
+                    .frame(height: 16 + 128 * (bucket.totalFocus / maxFocus))
                     .frame(maxWidth: .infinity)
             }
         }
-        .frame(height: 80)
+        .frame(height: 160)
     }
 }

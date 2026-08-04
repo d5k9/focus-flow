@@ -2,12 +2,13 @@ import SwiftUI
 import FocusFlowKit
 
 /// The only view that reads per-second timer state. Kept separate from
-/// `TimerPopoverView` so a tick invalidates this body alone rather than the
-/// whole popover. It must take the view model — passing `vm.progress` and
+/// `TimerSectionView` so a tick invalidates this body alone rather than the
+/// whole section. It must take the view model — passing `vm.progress` and
 /// `vm.displayTime` in from the parent would move the observable read back up
 /// and undo the split.
 struct TimerReadout: View {
     let vm: TimerViewModel
+    var diameter: CGFloat = 160
 
     var body: some View {
         ZStack {
@@ -20,7 +21,7 @@ struct TimerReadout: View {
                     .foregroundStyle(DesignTokens.secondaryText)
             }
         }
-        .frame(width: 160, height: 160)
+        .frame(width: diameter, height: diameter)
         .padding(.vertical, DesignTokens.stackTight)
     }
 }

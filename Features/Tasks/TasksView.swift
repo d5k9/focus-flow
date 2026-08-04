@@ -23,11 +23,10 @@ struct TasksView: View {
                         }
                     }
                 }
-                .frame(maxHeight: 260)
             }
         }
         .padding(DesignTokens.containerPadding)
-        .frame(width: DesignTokens.menuWidth)
+        .frame(maxWidth: 640)
         .background(DesignTokens.surface)
         .foregroundStyle(DesignTokens.onSurface)
     }

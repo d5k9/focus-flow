@@ -25,7 +25,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         ticker: DispatchSourceTimerTicker())
 
     private var onboardingWindow: NSWindow?
-    private var preferencesWindow: NSWindow?
+    private var mainWindow: NSWindow?
     private var breakFlow: BreakFlowCoordinator?
 
     override init() {
@@ -60,9 +60,45 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         Task { _ = await notifications.requestAuthorization() }
-        showOnboardingIfNeeded()
         observeSettings()
         breakFlow = BreakFlowCoordinator(timerVM: timerVM)
+        if settings.hasCompletedOnboarding {
+            showMainWindow()
+        } else {
+            showOnboarding()   // its completion opens the main window
+        }
+    }
+
+    /// The app's primary window. Owned here rather than declared as a SwiftUI
+    /// `Window` scene so it can be raised from anywhere — the menu-bar item, a
+    /// Dock click — without depending on scene restoration.
+    func showMainWindow() {
+        if let mainWindow {
+            mainWindow.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+            return
+        }
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 900, height: 600),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+            backing: .buffered, defer: false)
+        window.title = "FocusFlow"
+        window.titlebarAppearsTransparent = true
+        window.isReleasedWhenClosed = false
+        window.minSize = NSSize(width: 700, height: 460)
+        window.setFrameAutosaveName("FocusFlowMainWindow")
+        window.contentView = NSHostingView(rootView: MainWindowView(delegate: self))
+        window.center()
+        mainWindow = window
+        window.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    /// Re-raises the window when the Dock icon is clicked with none visible.
+    /// Closing the window is not termination — the timer keeps running.
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { showMainWindow() }
+        return true
     }
 
     /// Re-pushes pomodoro settings into the VM whenever a tracked settings
@@ -83,28 +119,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    func showOnboardingIfNeeded() {
-        guard !settings.hasCompletedOnboarding else { return }
-        showOnboarding()
-    }
-
     func showOnboarding() {
         if let w = onboardingWindow { w.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); return }
         let view = OnboardingView { [weak self] in
             self?.settings.hasCompletedOnboarding = true
             self?.onboardingWindow?.close()
+            self?.showMainWindow()
         }
         let window = makeAuxWindow(title: "Welcome to FocusFlow", content: view, size: NSSize(width: 360, height: 360))
         onboardingWindow = window
-        window.makeKeyAndOrderFront(nil)
-        NSApp.activate(ignoringOtherApps: true)
-    }
-
-    func showPreferences() {
-        if let w = preferencesWindow { w.makeKeyAndOrderFront(nil); NSApp.activate(ignoringOtherApps: true); return }
-        let view = PreferencesView(settings: settings)
-        let window = makeAuxWindow(title: "FocusFlow Preferences", content: view, size: NSSize(width: 320, height: 460))
-        preferencesWindow = window
         window.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }

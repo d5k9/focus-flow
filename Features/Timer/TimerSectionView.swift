@@ -1,39 +1,26 @@
 import SwiftUI
 import FocusFlowKit
 
-struct TimerPopoverView: View {
+/// The Timer section of the main window. No header row or gear button — the
+/// window has a title bar and Preferences lives behind ⌘, now.
+struct TimerSectionView: View {
     let vm: TimerViewModel
     let tasksVM: TasksViewModel
-    var onOpenPreferences: () -> Void = {}
     var onPickTask: () -> Void = {}
 
     private var accent: Color { DesignTokens.accent(for: vm.phase) }
 
     var body: some View {
         VStack(spacing: DesignTokens.elementGap) {
-            header
-            TimerReadout(vm: vm)
+            Spacer(minLength: 0)
+            TimerReadout(vm: vm, diameter: 220)
             controls
             ActiveTaskChip(vm: tasksVM, onPick: onPickTask)
             SessionList(currentPhase: vm.phase)
+            Spacer(minLength: 0)
         }
         .padding(DesignTokens.containerPadding)
-        .frame(width: DesignTokens.menuWidth)
-        .background(DesignTokens.surface)
-        .foregroundStyle(DesignTokens.onSurface)
-    }
-
-    private var header: some View {
-        HStack {
-            Text("FocusFlow").font(DesignTokens.headlineMd)
-            Spacer()
-            Button(action: onOpenPreferences) {
-                Image(systemName: "gearshape.fill")
-                    .foregroundStyle(DesignTokens.secondaryText)
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Preferences")
-        }
+        .frame(maxWidth: 480)
     }
 
     private var controls: some View {

@@ -1,8 +1,18 @@
+# macOS
 .DS_Store
+
+# Swift Package Manager
 .build/
+.swiftpm/
+
+# Xcode (XcodeGen generates the project from project.yml)
 DerivedData/
 *.xcodeproj
 *.xcworkspace
 !project.yml
 xcuserdata/
 *.xcuserstate
+
+# Local agent workspace and design notes (not published)
+.superpowers/
+docs/superpowers/
